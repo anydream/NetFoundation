@@ -22,6 +22,9 @@
     <Filter Include="uvpp">
       <UniqueIdentifier>{a5c173ed-4489-40de-a08a-bf499445a604}</UniqueIdentifier>
     </Filter>
+    <Filter Include="common">
+      <UniqueIdentifier>{2cc88e67-5a79-4048-8aef-5eeb31ccbca9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -160,6 +163,9 @@
     </ClInclude>
     <ClInclude Include="uvpp\uvpp.h">
       <Filter>uvpp</Filter>
+    </ClInclude>
+    <ClInclude Include="common\SharedUniquePtr.h">
+      <Filter>common</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

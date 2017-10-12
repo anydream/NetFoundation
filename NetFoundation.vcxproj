@@ -187,6 +187,7 @@
     <ClCompile Include="uvpp\uvpp.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="common\SharedUniquePtr.h" />
     <ClInclude Include="depends\libuv\src\heap-inl.h" />
     <ClInclude Include="depends\libuv\src\queue.h" />
     <ClInclude Include="depends\libuv\src\uv-common.h" />
