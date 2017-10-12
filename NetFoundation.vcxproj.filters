@@ -25,6 +25,9 @@
     <Filter Include="common">
       <UniqueIdentifier>{2cc88e67-5a79-4048-8aef-5eeb31ccbca9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="NetFoundation">
+      <UniqueIdentifier>{1f56be99-f60d-49c9-8f58-db8de8476312}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -129,6 +132,12 @@
     <ClCompile Include="uvpp\uvpp.cpp">
       <Filter>uvpp</Filter>
     </ClCompile>
+    <ClCompile Include="src\NFEventEngine.cpp">
+      <Filter>NetFoundation</Filter>
+    </ClCompile>
+    <ClCompile Include="src\NFTimer.cpp">
+      <Filter>NetFoundation</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="depends\libuv\src\heap-inl.h">
@@ -166,6 +175,12 @@
     </ClInclude>
     <ClInclude Include="common\SharedUniquePtr.h">
       <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="include\NFEventEngine.h">
+      <Filter>NetFoundation</Filter>
+    </ClInclude>
+    <ClInclude Include="include\NFTimer.h">
+      <Filter>NetFoundation</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

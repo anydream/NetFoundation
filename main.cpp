@@ -4,41 +4,85 @@
 
 #include <stdio.h>
 #include "uvpp/uvpp.h"
+#include "NFTimer.h"
 #include "common/SharedUniquePtr.h"
 
 //////////////////////////////////////////////////////////////////////////
-using namespace uvpp;
-
-static void TestTimer(UvLoop &loop)
+namespace TestUvpp
 {
-	UvTimer *pTimer = UvTimer::New();
+	using namespace uvpp;
 
-	int status = pTimer->Init(loop);
-	printf("* Timer.Init: %d\n", status);
-
-	SharedUniquePtr<int> pCounter(new int(0));
-	status = pTimer->Start([&loop, pTimer, pCounter]()
+	static void TestTimer(UvLoop &loop)
 	{
-		printf("* Timeout ID: %d\n", *pCounter);
-		if (++*pCounter == 3)
-		{
-			printf("* Timer.Finished\n");
-			//pTimer->Stop();
-			loop.DelayDelete(pTimer);
-		}
-	}, 500, 1000);
+		UvTimer *pTimer = UvTimer::New();
 
-	printf("* Timer.Start: %d\n", status);
+		int status = pTimer->Init(loop);
+		printf("* Timer.Init: %d\n", status);
+
+		SharedUniquePtr<int> pCounter(new int(0));
+		status = pTimer->Start([&loop, pTimer, pCounter]()
+		{
+			printf("* Timeout ID: %d\n", *pCounter);
+			if (++*pCounter == 5)
+			{
+				printf("* Timer.Finished\n");
+				loop.DelayDelete(pTimer);
+			}
+		}, 500, 1000);
+
+		printf("* Timer.Start: %d\n", status);
+	}
+
+	static void TestEntry()
+	{
+		printf("* TestUvpp\n");
+
+		UvLoop loop;
+
+		TestTimer(loop);
+
+		loop.Run();
+	}
+}
+
+namespace TestNF
+{
+	using namespace NetFoundation;
+
+	static void TestTimer(EventEngine &ee)
+	{
+		Timer tmr(ee);
+
+		Timer *pRawTmr = new Timer(std::move(tmr));
+		SharedUniquePtr<Timer> pTmr(pRawTmr);
+		SharedUniquePtr<int> pCounter(new int(0));
+		pRawTmr->Start([pTmr, pCounter]() mutable
+		{
+			printf("* Timeout ID: %d\n", *pCounter);
+			if (++*pCounter == 5)
+			{
+				printf("* Timer.Finished\n");
+				pTmr = nullptr;
+			}
+		}, 500, 1000);
+	}
+
+	static void TestEntry()
+	{
+		printf("* TestNF\n");
+
+		EventEngine ee;
+
+		TestTimer(ee);
+
+		ee.RunDefault();
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////
 int main()
 {
-	UvLoop loop;
-
-	TestTimer(loop);
-
-	loop.Run();
-
+	TestUvpp::TestEntry();
+	TestNF::TestEntry();
 	return 0;
 }
