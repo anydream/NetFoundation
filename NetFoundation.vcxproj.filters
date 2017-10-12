@@ -123,22 +123,7 @@
     <ClCompile Include="depends\libuv\src\win\winsock.c">
       <Filter>libuv\win</Filter>
     </ClCompile>
-    <ClCompile Include="uvpp\UvBuffer.cpp">
-      <Filter>uvpp</Filter>
-    </ClCompile>
-    <ClCompile Include="uvpp\UvHandle.cpp">
-      <Filter>uvpp</Filter>
-    </ClCompile>
-    <ClCompile Include="uvpp\UvIPv4.cpp">
-      <Filter>uvpp</Filter>
-    </ClCompile>
     <ClCompile Include="uvpp\UvLoop.cpp">
-      <Filter>uvpp</Filter>
-    </ClCompile>
-    <ClCompile Include="uvpp\UvStream.cpp">
-      <Filter>uvpp</Filter>
-    </ClCompile>
-    <ClCompile Include="uvpp\UvTCP.cpp">
       <Filter>uvpp</Filter>
     </ClCompile>
   </ItemGroup>
@@ -173,22 +158,7 @@
     <ClInclude Include="depends\libuv\src\win\winsock.h">
       <Filter>libuv\win</Filter>
     </ClInclude>
-    <ClInclude Include="uvpp\UvBuffer.h">
-      <Filter>uvpp</Filter>
-    </ClInclude>
-    <ClInclude Include="uvpp\UvHandle.h">
-      <Filter>uvpp</Filter>
-    </ClInclude>
-    <ClInclude Include="uvpp\UvIPv4.h">
-      <Filter>uvpp</Filter>
-    </ClInclude>
     <ClInclude Include="uvpp\UvLoop.h">
-      <Filter>uvpp</Filter>
-    </ClInclude>
-    <ClInclude Include="uvpp\UvStream.h">
-      <Filter>uvpp</Filter>
-    </ClInclude>
-    <ClInclude Include="uvpp\UvTCP.h">
       <Filter>uvpp</Filter>
     </ClInclude>
   </ItemGroup>
