@@ -9,8 +9,8 @@ public:
 	{
 	}
 
-	explicit SharedUniquePtr(T *rawPtr) noexcept
-		: Ptr_(rawPtr)
+	explicit SharedUniquePtr(T *ptr) noexcept
+		: Ptr_(ptr)
 	{
 	}
 
@@ -52,9 +52,14 @@ public:
 		return *Get();
 	}
 
-	T* Get() const
+	T* Get() const noexcept
 	{
 		return Ptr_.get();
+	}
+
+	void Reset(T *ptr) noexcept
+	{
+		Ptr_.reset(ptr);
 	}
 
 private:
