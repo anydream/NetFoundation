@@ -123,7 +123,7 @@
     <ClCompile Include="depends\libuv\src\win\winsock.c">
       <Filter>libuv\win</Filter>
     </ClCompile>
-    <ClCompile Include="uvpp\UvLoop.cpp">
+    <ClCompile Include="uvpp\uvpp.cpp">
       <Filter>uvpp</Filter>
     </ClCompile>
   </ItemGroup>
@@ -158,7 +158,7 @@
     <ClInclude Include="depends\libuv\src\win\winsock.h">
       <Filter>libuv\win</Filter>
     </ClInclude>
-    <ClInclude Include="uvpp\UvLoop.h">
+    <ClInclude Include="uvpp\uvpp.h">
       <Filter>uvpp</Filter>
     </ClInclude>
   </ItemGroup>

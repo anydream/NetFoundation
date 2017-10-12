@@ -184,7 +184,7 @@
     <ClCompile Include="depends\libuv\src\win\winapi.c" />
     <ClCompile Include="depends\libuv\src\win\winsock.c" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="uvpp\UvLoop.cpp" />
+    <ClCompile Include="uvpp\uvpp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="depends\libuv\src\heap-inl.h" />
@@ -197,7 +197,7 @@
     <ClInclude Include="depends\libuv\src\win\stream-inl.h" />
     <ClInclude Include="depends\libuv\src\win\winapi.h" />
     <ClInclude Include="depends\libuv\src\win\winsock.h" />
-    <ClInclude Include="uvpp\UvLoop.h" />
+    <ClInclude Include="uvpp\uvpp.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

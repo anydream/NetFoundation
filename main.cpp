@@ -3,7 +3,7 @@
 #endif
 
 #include <stdio.h>
-#include "uvpp/UvLoop.h"
+#include "uvpp/uvpp.h"
 
 using namespace uvpp;
 
