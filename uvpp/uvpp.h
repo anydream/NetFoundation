@@ -9,6 +9,7 @@ namespace uvpp
 	class UvLoop
 	{
 		friend class UvIdle;
+		friend class UvTimer;
 	public:
 		enum RunMode
 		{
@@ -47,6 +48,28 @@ namespace uvpp
 		int Init(UvLoop &loop);
 		int Start(std::function<void()> &&cbIdle);
 		int Stop();
+
+	private:
+		struct Impl;
+		std::unique_ptr<Impl> Impl_;
+	};
+
+	//////////////////////////////////////////////////////////////////////////
+	class UvTimer
+	{
+	public:
+		UvTimer();
+		UvTimer(UvTimer &&other) noexcept;
+		~UvTimer();
+
+		UvTimer& operator = (UvTimer &&other) noexcept;
+
+		int Init(UvLoop &loop);
+		int Start(std::function<void()> &&cbTimer, uint64_t timeout, uint64_t repeat);
+		int Stop();
+		int Again();
+		void SetRepeat(uint64_t repeat);
+		uint64_t GetRepeat() const;
 
 	private:
 		struct Impl;

@@ -133,4 +133,74 @@ namespace uvpp
 	{
 		return uv_idle_stop(&Impl_->Idle_);
 	}
+
+	//////////////////////////////////////////////////////////////////////////
+	struct UvTimer::Impl
+	{
+		uv_timer_t Timer_ = {};
+		std::function<void()> Callback_;
+
+		void UpdateDataPtr()
+		{
+			Timer_.data = this;
+		}
+	};
+
+	UvTimer::UvTimer()
+		: Impl_(new Impl)
+	{
+	}
+
+	UvTimer::UvTimer(UvTimer &&other) noexcept
+		: Impl_(std::move(other.Impl_))
+	{
+	}
+
+	UvTimer::~UvTimer()
+	{
+	}
+
+	UvTimer& UvTimer::operator = (UvTimer &&other) noexcept
+	{
+		if (this != &other)
+			std::swap(Impl_, other.Impl_);
+		return *this;
+	}
+
+	int UvTimer::Init(UvLoop &loop)
+	{
+		return uv_timer_init(&loop.Impl_->Loop_, &Impl_->Timer_);
+	}
+
+	int UvTimer::Start(std::function<void()> &&cbTimer, uint64_t timeout, uint64_t repeat)
+	{
+		Impl_->Callback_ = std::move(cbTimer);
+		Impl_->UpdateDataPtr();
+
+		return uv_timer_start(&Impl_->Timer_, [](uv_timer_t *handle)
+		{
+			if (UvTimer::Impl *self = static_cast<UvTimer::Impl*>(handle->data))
+				self->Callback_();
+		}, timeout, repeat);
+	}
+
+	int UvTimer::Stop()
+	{
+		return uv_timer_stop(&Impl_->Timer_);
+	}
+
+	int UvTimer::Again()
+	{
+		return uv_timer_again(&Impl_->Timer_);
+	}
+
+	void UvTimer::SetRepeat(uint64_t repeat)
+	{
+		uv_timer_set_repeat(&Impl_->Timer_, repeat);
+	}
+
+	uint64_t UvTimer::GetRepeat() const
+	{
+		return uv_timer_get_repeat(&Impl_->Timer_);
+	}
 }
