@@ -1,80 +1,73 @@
 ﻿#pragma once
 
-#include <memory>
 #include <functional>
+#include <uv.h>
 
 namespace uvpp
 {
 	//////////////////////////////////////////////////////////////////////////
+	class UvHandle
+	{
+	public:
+		virtual ~UvHandle() {}
+
+		virtual uv_handle_t* GetRawHandle() = 0;
+	};
+
+	//////////////////////////////////////////////////////////////////////////
 	class UvLoop
 	{
-		friend class UvIdle;
-		friend class UvTimer;
 	public:
 		enum RunMode
 		{
-			Default,
-			Once,
-			NoWait
+			Default = UV_RUN_DEFAULT,
+			Once = UV_RUN_ONCE,
+			NoWait = UV_RUN_NOWAIT
 		};
 
 	public:
 		UvLoop();
-		UvLoop(UvLoop &&other) noexcept;
+		UvLoop(const UvLoop&) = delete;
 		~UvLoop();
 
-		UvLoop& operator = (UvLoop &&other) noexcept;
+		UvLoop& operator = (const UvLoop&) = delete;
 
-		int Init();
-		int Close();
 		int Run(RunMode mode = Default);
 		void Stop();
 
+		void DelayDelete(UvHandle *pHandle);
+
+		uv_loop_t* GetRawHandle();
+		bool IsRunning() const;
+
 	private:
-		struct Impl;
-		std::unique_ptr<Impl> Impl_;
+		uv_loop_t Loop_ = {};
+		bool IsRunning_ = false;
 	};
 
 	//////////////////////////////////////////////////////////////////////////
-	class UvIdle
+	class UvTimer : public UvHandle
 	{
 	public:
-		UvIdle();
-		UvIdle(UvIdle &&other) noexcept;
-		~UvIdle();
-
-		UvIdle& operator = (UvIdle &&other) noexcept;
-
 		int Init(UvLoop &loop);
-		void Close();
-		int Start(std::function<void()> &&cbIdle);
-		int Stop();
-
-	private:
-		struct Impl;
-		std::unique_ptr<Impl> Impl_;
-	};
-
-	//////////////////////////////////////////////////////////////////////////
-	class UvTimer
-	{
-	public:
-		UvTimer();
-		UvTimer(UvTimer &&other) noexcept;
-		~UvTimer();
-
-		UvTimer& operator = (UvTimer &&other) noexcept;
-
-		int Init(UvLoop &loop);
-		void Close();
 		int Start(std::function<void()> &&cbTimer, uint64_t timeout, uint64_t repeat);
 		int Stop();
 		int Again();
+
 		void SetRepeat(uint64_t repeat);
 		uint64_t GetRepeat() const;
 
+		uv_handle_t* GetRawHandle() override;
+
+	public:
+		static UvTimer* New();
+
 	private:
-		struct Impl;
-		std::unique_ptr<Impl> Impl_;
+		UvTimer() {}
+		~UvTimer();
+
+	private:
+		uv_timer_t Timer_ = {};
+		std::function<void()> Callback_;
 	};
 }
