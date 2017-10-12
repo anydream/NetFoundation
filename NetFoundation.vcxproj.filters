@@ -13,10 +13,144 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="libuv">
+      <UniqueIdentifier>{a9dcf681-d855-49f8-8fd2-80f8c6b930d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="libuv\win">
+      <UniqueIdentifier>{5c7314be-d0bb-4ce1-881d-21ac4fd2a69b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="depends\libuv\src\fs-poll.c">
+      <Filter>libuv</Filter>
+    </ClCompile>
+    <ClCompile Include="depends\libuv\src\inet.c">
+      <Filter>libuv</Filter>
+    </ClCompile>
+    <ClCompile Include="depends\libuv\src\threadpool.c">
+      <Filter>libuv</Filter>
+    </ClCompile>
+    <ClCompile Include="depends\libuv\src\uv-common.c">
+      <Filter>libuv</Filter>
+    </ClCompile>
+    <ClCompile Include="depends\libuv\src\version.c">
+      <Filter>libuv</Filter>
+    </ClCompile>
+    <ClCompile Include="depends\libuv\src\win\async.c">
+      <Filter>libuv\win</Filter>
+    </ClCompile>
+    <ClCompile Include="depends\libuv\src\win\core.c">
+      <Filter>libuv\win</Filter>
+    </ClCompile>
+    <ClCompile Include="depends\libuv\src\win\detect-wakeup.c">
+      <Filter>libuv\win</Filter>
+    </ClCompile>
+    <ClCompile Include="depends\libuv\src\win\dl.c">
+      <Filter>libuv\win</Filter>
+    </ClCompile>
+    <ClCompile Include="depends\libuv\src\win\error.c">
+      <Filter>libuv\win</Filter>
+    </ClCompile>
+    <ClCompile Include="depends\libuv\src\win\fs.c">
+      <Filter>libuv\win</Filter>
+    </ClCompile>
+    <ClCompile Include="depends\libuv\src\win\fs-event.c">
+      <Filter>libuv\win</Filter>
+    </ClCompile>
+    <ClCompile Include="depends\libuv\src\win\getaddrinfo.c">
+      <Filter>libuv\win</Filter>
+    </ClCompile>
+    <ClCompile Include="depends\libuv\src\win\getnameinfo.c">
+      <Filter>libuv\win</Filter>
+    </ClCompile>
+    <ClCompile Include="depends\libuv\src\win\handle.c">
+      <Filter>libuv\win</Filter>
+    </ClCompile>
+    <ClCompile Include="depends\libuv\src\win\loop-watcher.c">
+      <Filter>libuv\win</Filter>
+    </ClCompile>
+    <ClCompile Include="depends\libuv\src\win\pipe.c">
+      <Filter>libuv\win</Filter>
+    </ClCompile>
+    <ClCompile Include="depends\libuv\src\win\poll.c">
+      <Filter>libuv\win</Filter>
+    </ClCompile>
+    <ClCompile Include="depends\libuv\src\win\process.c">
+      <Filter>libuv\win</Filter>
+    </ClCompile>
+    <ClCompile Include="depends\libuv\src\win\process-stdio.c">
+      <Filter>libuv\win</Filter>
+    </ClCompile>
+    <ClCompile Include="depends\libuv\src\win\req.c">
+      <Filter>libuv\win</Filter>
+    </ClCompile>
+    <ClCompile Include="depends\libuv\src\win\signal.c">
+      <Filter>libuv\win</Filter>
+    </ClCompile>
+    <ClCompile Include="depends\libuv\src\win\snprintf.c">
+      <Filter>libuv\win</Filter>
+    </ClCompile>
+    <ClCompile Include="depends\libuv\src\win\stream.c">
+      <Filter>libuv\win</Filter>
+    </ClCompile>
+    <ClCompile Include="depends\libuv\src\win\tcp.c">
+      <Filter>libuv\win</Filter>
+    </ClCompile>
+    <ClCompile Include="depends\libuv\src\win\thread.c">
+      <Filter>libuv\win</Filter>
+    </ClCompile>
+    <ClCompile Include="depends\libuv\src\win\timer.c">
+      <Filter>libuv\win</Filter>
+    </ClCompile>
+    <ClCompile Include="depends\libuv\src\win\tty.c">
+      <Filter>libuv\win</Filter>
+    </ClCompile>
+    <ClCompile Include="depends\libuv\src\win\udp.c">
+      <Filter>libuv\win</Filter>
+    </ClCompile>
+    <ClCompile Include="depends\libuv\src\win\util.c">
+      <Filter>libuv\win</Filter>
+    </ClCompile>
+    <ClCompile Include="depends\libuv\src\win\winapi.c">
+      <Filter>libuv\win</Filter>
+    </ClCompile>
+    <ClCompile Include="depends\libuv\src\win\winsock.c">
+      <Filter>libuv\win</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="depends\libuv\src\heap-inl.h">
+      <Filter>libuv</Filter>
+    </ClInclude>
+    <ClInclude Include="depends\libuv\src\queue.h">
+      <Filter>libuv</Filter>
+    </ClInclude>
+    <ClInclude Include="depends\libuv\src\uv-common.h">
+      <Filter>libuv</Filter>
+    </ClInclude>
+    <ClInclude Include="depends\libuv\src\win\atomicops-inl.h">
+      <Filter>libuv\win</Filter>
+    </ClInclude>
+    <ClInclude Include="depends\libuv\src\win\handle-inl.h">
+      <Filter>libuv\win</Filter>
+    </ClInclude>
+    <ClInclude Include="depends\libuv\src\win\internal.h">
+      <Filter>libuv\win</Filter>
+    </ClInclude>
+    <ClInclude Include="depends\libuv\src\win\req-inl.h">
+      <Filter>libuv\win</Filter>
+    </ClInclude>
+    <ClInclude Include="depends\libuv\src\win\stream-inl.h">
+      <Filter>libuv\win</Filter>
+    </ClInclude>
+    <ClInclude Include="depends\libuv\src\win\winapi.h">
+      <Filter>libuv\win</Filter>
+    </ClInclude>
+    <ClInclude Include="depends\libuv\src\win\winsock.h">
+      <Filter>libuv\win</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
