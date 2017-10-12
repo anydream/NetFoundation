@@ -1,0 +1,21 @@
+﻿- namespace: uvpp
+  - UvLoop
+    - Run(mode)
+	- Close();
+  - UvBuffer
+    - ctor(size)
+  - UvHandle
+    - Close(cbClose)
+  - UvStream : UvHandle
+	- Listen(maxconn, cbConnect)
+    - Accept(newStream)
+	- ReadStart(cbRead, cbAlloc = default)
+	- Write(req, bufArray, cbWrite);
+	- Shutdown(cbShutdown)
+  - UvTCP : UvStream
+    - Init(loop)
+	- Bind(addr)
+  - UvUDP
+  - UvIPv4
+    - static ToSockAddr(ip, port)
+  - UvIPv6
