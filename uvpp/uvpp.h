@@ -46,6 +46,7 @@ namespace uvpp
 		UvIdle& operator = (UvIdle &&other) noexcept;
 
 		int Init(UvLoop &loop);
+		void Close();
 		int Start(std::function<void()> &&cbIdle);
 		int Stop();
 
@@ -65,6 +66,7 @@ namespace uvpp
 		UvTimer& operator = (UvTimer &&other) noexcept;
 
 		int Init(UvLoop &loop);
+		void Close();
 		int Start(std::function<void()> &&cbTimer, uint64_t timeout, uint64_t repeat);
 		int Stop();
 		int Again();

@@ -117,6 +117,17 @@ namespace uvpp
 		return uv_idle_init(&loop.Impl_->Loop_, &Impl_->Idle_);
 	}
 
+	void UvIdle::Close()
+	{
+		Impl *pImpl = Impl_.release();
+		pImpl->UpdateDataPtr();
+		uv_close(reinterpret_cast<uv_handle_t*>(&pImpl->Idle_), [](uv_handle_t *handle)
+		{
+			if (UvIdle::Impl *self = static_cast<UvIdle::Impl*>(handle->data))
+				delete self;
+		});
+	}
+
 	int UvIdle::Start(std::function<void()> &&cbIdle)
 	{
 		Impl_->Callback_ = std::move(cbIdle);
@@ -170,6 +181,17 @@ namespace uvpp
 	int UvTimer::Init(UvLoop &loop)
 	{
 		return uv_timer_init(&loop.Impl_->Loop_, &Impl_->Timer_);
+	}
+
+	void UvTimer::Close()
+	{
+		Impl *pImpl = Impl_.release();
+		pImpl->UpdateDataPtr();
+		uv_close(reinterpret_cast<uv_handle_t*>(&pImpl->Timer_), [](uv_handle_t *handle)
+		{
+			if (UvTimer::Impl *self = static_cast<UvTimer::Impl*>(handle->data))
+				delete self;
+		});
 	}
 
 	int UvTimer::Start(std::function<void()> &&cbTimer, uint64_t timeout, uint64_t repeat)
