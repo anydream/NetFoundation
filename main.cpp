@@ -35,7 +35,7 @@ namespace TestUvpp
 
 	static void TestEntry()
 	{
-		printf("* TestUvpp\n");
+		printf("===== TestUvpp =====\n");
 
 		UvLoop loop;
 
@@ -69,7 +69,7 @@ namespace TestNF
 
 	static void TestEntry()
 	{
-		printf("* TestNF\n");
+		printf("===== TestNF =====\n");
 
 		EventEngine ee;
 
