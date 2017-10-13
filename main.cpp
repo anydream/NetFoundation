@@ -38,32 +38,55 @@ namespace TestUvpp
 
 	static void TestTCPServer(UvLoop &loop)
 	{
+		// 创建服务端
 		UvTCP *pServer = new UvTCP;
-
 		int status = pServer->Init(loop);
 		printf("* UvTCP.Init: %d\n", status);
 
+		// 绑定端口
 		sockaddr_in addr;
 		UvMisc::ToAddrIPv4("0.0.0.0", 12334, &addr);
 		status = pServer->Bind(reinterpret_cast<const sockaddr*>(&addr));
 		printf("* UvTCP.Bind: %d\n", status);
 
-		status = pServer->Listen([&loop](UvStream *server, int status)
+		// 开始监听
+		status = pServer->Listen([&loop, pServer,
+			numClients = SharedUniquePtr<int>(new int(0))](UvStream *server, int status)
 		{
-			printf("* OnConnected: %d\n", status);
 			if (status < 0)
+			{
+				printf("* IncomingConnect Error: %d\n", status);
 				return;
-
+			}
+			printf("* IncomingConnect: %d\n", status);
+			// 创建会话
 			UvTCP *pClient = new UvTCP;
 			pClient->Init(loop);
 			status = server->Accept(pClient);
 			if (status == 0)
 			{
-				printf("* Accepted: \n");
-				pClient->ReadStart([](UvStream *stream, ssize_t nread, UvBuf *buf)
+				++*numClients;
+				printf("* Accepted: Total: %d\n", *numClients);
+				// 开始接收数据
+				UvBuf *pRecvBuf = new UvBuf;
+				pClient->ReadStart([&loop, &numClients, pServer,
+					pRecvBuf](UvStream *stream, ssize_t nread, UvBuf *buf)
 				{
-					printf("* Read: %d, [%.*s]\n", nread, nread, buf->Data);
-					buf->Free();
+					if (nread < 0)
+					{
+						--*numClients;
+						printf("* Disconnected: %Id, Total: %d\n", nread, *numClients);
+						delete pRecvBuf;
+						loop.DelayDelete(stream);
+						if (*numClients == 0)
+							loop.DelayDelete(pServer);
+						return;
+					}
+					printf("* Read: %Id, [%.*s]\n", nread, nread, buf->Data);
+				}, [pRecvBuf](UvHandle *handle, size_t suggested_size, UvBuf *buf)
+				{
+					pRecvBuf->Alloc(suggested_size);
+					*buf = *pRecvBuf;
 				});
 			}
 			else

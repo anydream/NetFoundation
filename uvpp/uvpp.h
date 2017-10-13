@@ -15,16 +15,23 @@ namespace uvpp
 		{
 		}
 
-		UvBuf(size_t len, char *data)
-			: Length(len)
-			, Data(data)
+		~UvBuf()
 		{
+			Free();
 		}
 
 		void Alloc(size_t len)
 		{
-			Length = len;
-			Data = static_cast<char*>(malloc(len));
+			if (Data == nullptr)
+			{
+				Length = len;
+				Data = static_cast<char*>(malloc(len));
+			}
+			else if (Length < len)
+			{
+				Length = len;
+				Data = static_cast<char*>(realloc(Data, len));
+			}
 		}
 
 		void Free()
@@ -122,7 +129,7 @@ namespace uvpp
 	public:
 		int Listen(CbConnect &&cbConnect, int backlog = 128);
 		int Accept(UvStream *client);
-		int ReadStart(CbRead &&cbRead, CbAlloc &&cbAlloc = [](UvHandle *handle, size_t suggested_size, UvBuf *buf) { buf->Alloc(suggested_size); });
+		int ReadStart(CbRead &&cbRead, CbAlloc &&cbAlloc);
 		int Write(const UvBuf bufs[], uint32_t nbufs, CbWrite &&cbWrite);
 		int Shutdown(CbShutdown &&cbShutdown);
 
