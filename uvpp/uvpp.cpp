@@ -75,7 +75,7 @@ namespace uvpp
 			delete pHandle;
 	}
 
-	uv_loop_t* UvLoop::GetRawHandle()
+	uv_loop_t* UvLoop::GetRawLoop()
 	{
 		return &Loop_;
 	}
@@ -93,15 +93,14 @@ namespace uvpp
 
 	int UvTimer::Init(UvLoop &loop)
 	{
-		int status = uv_timer_init(loop.GetRawHandle(), &Timer_);
+		int status = uv_timer_init(loop.GetRawLoop(), &Timer_);
 		Timer_.data = this;
 		return status;
 	}
 
-	int UvTimer::Start(std::function<void()> &&cbTimer, uint64_t timeout, uint64_t repeat)
+	int UvTimer::Start(uint64_t timeout, uint64_t repeat, std::function<void()> &&cbTimer)
 	{
 		assert(cbTimer);
-
 		Callback_ = cbTimer;
 		return uv_timer_start(&Timer_, [](uv_timer_t *handle)
 		{
@@ -136,8 +135,45 @@ namespace uvpp
 		return reinterpret_cast<uv_handle_t*>(&Timer_);
 	}
 
-	UvTimer* UvTimer::New()
+	//////////////////////////////////////////////////////////////////////////
+	int UvStream::Listen(CbConnect &&cbConnect, int backlog)
 	{
-		return new UvTimer;
+		assert(cbConnect);
+		CallbackConnect_ = cbConnect;
+		return uv_listen(GetRawStream(), backlog, [](uv_stream_t *server, int status)
+		{
+			UvStream *pStream = static_cast<UvStream*>(server->data);
+			assert(pStream);
+			pStream->CallbackConnect_(pStream, status);
+		});
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+	int UvTCP::Init(UvLoop &loop)
+	{
+		int status = uv_tcp_init(loop.GetRawLoop(), &TCP_);
+		TCP_.data = this;
+		return status;
+	}
+
+	int UvTCP::Bind(const sockaddr *addr, uint32_t flags)
+	{
+		return uv_tcp_bind(&TCP_, addr, flags);
+	}
+
+	uv_stream_t* UvTCP::GetRawStream()
+	{
+		return reinterpret_cast<uv_stream_t*>(&TCP_);
+	}
+
+	uv_handle_t* UvTCP::GetRawHandle()
+	{
+		return reinterpret_cast<uv_handle_t*>(&TCP_);
+	}
+
+	//////////////////////////////////////////////////////////////////////////
+	int UvMisc::ToAddrIPv4(const char *ip, int port, sockaddr_in *addr)
+	{
+		return uv_ip4_addr(ip, port, addr);
 	}
 }

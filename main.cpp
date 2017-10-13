@@ -14,12 +14,13 @@ namespace TestUvpp
 
 	static void TestTimer(UvLoop &loop)
 	{
-		UvTimer *pTimer = UvTimer::New();
+		UvTimer *pTimer = new UvTimer();
 
 		int status = pTimer->Init(loop);
 		printf("* Timer.Init: %d\n", status);
 
 		status = pTimer->Start(
+			500, 1000,
 			[&loop,
 			pTimer,
 			pCounter = SharedUniquePtr<int>(new int(0))]()
@@ -30,9 +31,28 @@ namespace TestUvpp
 				printf("* Timer.Finished\n");
 				loop.DelayDelete(pTimer);
 			}
-		}, 500, 1000);
+		});
 
 		printf("* Timer.Start: %d\n", status);
+	}
+
+	static void TestTCPServer(UvLoop &loop)
+	{
+		UvTCP *pServer = new UvTCP;
+
+		int status = pServer->Init(loop);
+		printf("* UvTCP.Init: %d\n", status);
+
+		sockaddr_in addr;
+		UvMisc::ToAddrIPv4("0.0.0.0", 12334, &addr);
+		status = pServer->Bind(reinterpret_cast<const sockaddr*>(&addr));
+		printf("* UvTCP.Bind: %d\n", status);
+
+		status = pServer->Listen([](UvStream *server, int status)
+		{
+			printf("* OnConnected: %d\n", status);
+		});
+		printf("* UvTCP.Listen: %d\n", status);
 	}
 
 	static void TestEntry()
@@ -41,7 +61,8 @@ namespace TestUvpp
 
 		UvLoop loop;
 
-		TestTimer(loop);
+		TestTCPServer(loop);
+		//TestTimer(loop);
 
 		loop.Run();
 	}
@@ -55,6 +76,7 @@ namespace TestNF
 	{
 		Timer *pTimer = new Timer(ee);
 		pTimer->Start(
+			500, 1000,
 			[pTmr = SharedUniquePtr<Timer>(pTimer),
 			pCounter = SharedUniquePtr<int>(new int(0))]() mutable
 		{
@@ -64,7 +86,7 @@ namespace TestNF
 				printf("* Timer.Finished\n");
 				pTmr = nullptr;
 			}
-		}, 500, 1000);
+		});
 	}
 
 	static void TestEntry()
@@ -83,6 +105,6 @@ namespace TestNF
 int main()
 {
 	TestUvpp::TestEntry();
-	TestNF::TestEntry();
+	//TestNF::TestEntry();
 	return 0;
 }

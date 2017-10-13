@@ -13,7 +13,7 @@ namespace NetFoundation
 		explicit Impl(EventEngine &pEE)
 			: EE_(pEE)
 		{
-			Timer_ = UvTimer::New();
+			Timer_ = new UvTimer;
 			Timer_->Init(EE_.InternalGetLoop());
 		}
 
@@ -44,9 +44,9 @@ namespace NetFoundation
 		return *this;
 	}
 
-	bool Timer::Start(std::function<void()> &&cbTimer, uint64_t timeout, uint64_t repeat)
+	bool Timer::Start(uint64_t timeout, uint64_t repeat, std::function<void()> &&cbTimer)
 	{
-		int status = Impl_->Timer_->Start(std::move(cbTimer), timeout, repeat);
+		int status = Impl_->Timer_->Start(timeout, repeat, std::move(cbTimer));
 		if (status == 0)
 			return true;
 		return false;

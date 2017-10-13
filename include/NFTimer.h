@@ -14,7 +14,7 @@ namespace NetFoundation
 
 		Timer& operator = (Timer &&other) noexcept;
 
-		bool Start(std::function<void()> &&cbTimer, uint64_t timeout, uint64_t repeat);
+		bool Start(uint64_t timeout, uint64_t repeat, std::function<void()> &&cbTimer);
 		bool Stop();
 		bool Again();
 
