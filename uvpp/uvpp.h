@@ -26,14 +26,16 @@ namespace uvpp
 	//////////////////////////////////////////////////////////////////////////
 	class UvHandle
 	{
+		friend class UvLoop;
 	public:
-		virtual ~UvHandle() {}
-
 		virtual uv_handle_t* GetRawHandle() = 0;
 
 		const uv_handle_t* GetRawHandle() const;
 		bool IsActive() const;
 		bool IsClosing() const;
+
+	protected:
+		virtual ~UvHandle() {}
 	};
 
 	//////////////////////////////////////////////////////////////////////////
@@ -101,6 +103,9 @@ namespace uvpp
 		using CbWrite = std::function<void(int status)>;
 		using CbShutdown = std::function<void(int status)>;
 
+	protected:
+		~UvStream() {}
+
 	public:
 		int Listen(CbConnect &&cbConnect, int backlog = 128);
 		int Accept(UvStream *client);
@@ -123,6 +128,9 @@ namespace uvpp
 
 		uv_stream_t* GetRawStream() override;
 		uv_handle_t* GetRawHandle() override;
+
+	private:
+		~UvTCP() {}
 
 	private:
 		uv_tcp_t TCP_ = {};

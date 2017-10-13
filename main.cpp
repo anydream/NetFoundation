@@ -48,9 +48,25 @@ namespace TestUvpp
 		status = pServer->Bind(reinterpret_cast<const sockaddr*>(&addr));
 		printf("* UvTCP.Bind: %d\n", status);
 
-		status = pServer->Listen([](UvStream *server, int status)
+		status = pServer->Listen([&loop](UvStream *server, int status)
 		{
 			printf("* OnConnected: %d\n", status);
+			if (status < 0)
+				return;
+
+			UvTCP *pClient = new UvTCP;
+			pClient->Init(loop);
+			status = server->Accept(pClient);
+			if (status == 0)
+			{
+				printf("* Accepted: \n");
+				//pClient->ReadStart();
+			}
+			else
+			{
+				printf("* Accept Error: %d\n", status);
+				loop.DelayDelete(pClient);
+			}
 		});
 		printf("* UvTCP.Listen: %d\n", status);
 	}

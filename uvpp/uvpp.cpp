@@ -148,6 +148,11 @@ namespace uvpp
 		});
 	}
 
+	int UvStream::Accept(UvStream *client)
+	{
+		return uv_accept(GetRawStream(), client->GetRawStream());
+	}
+
 	//////////////////////////////////////////////////////////////////////////
 	int UvTCP::Init(UvLoop &loop)
 	{
