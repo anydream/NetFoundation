@@ -8,17 +8,30 @@ namespace uvpp
 	//////////////////////////////////////////////////////////////////////////
 	struct UvBuf
 	{
-		char *Data = nullptr;
 		size_t Length = 0;
+		char *Data = nullptr;
 
 		UvBuf()
 		{
 		}
 
-		UvBuf(char *data, size_t len)
-			: Data(data)
-			, Length(len)
+		UvBuf(size_t len, char *data)
+			: Length(len)
+			, Data(data)
 		{
+		}
+
+		void Alloc(size_t len)
+		{
+			Length = len;
+			Data = static_cast<char*>(malloc(len));
+		}
+
+		void Free()
+		{
+			Length = 0;
+			free(Data);
+			Data = nullptr;
 		}
 	};
 	static_assert(sizeof(UvBuf) == sizeof(uv_buf_t), "sizeof uv_buf_t");
@@ -99,7 +112,7 @@ namespace uvpp
 	public:
 		using CbConnect = std::function<void(UvStream *server, int status)>;
 		using CbAlloc = std::function<void(UvHandle *handle, size_t suggested_size, UvBuf *buf)>;
-		using CbRead = std::function<void(UvStream *stream, ssize_t nread, const UvBuf *buf)>;
+		using CbRead = std::function<void(UvStream *stream, ssize_t nread, UvBuf *buf)>;
 		using CbWrite = std::function<void(int status)>;
 		using CbShutdown = std::function<void(int status)>;
 
@@ -109,7 +122,7 @@ namespace uvpp
 	public:
 		int Listen(CbConnect &&cbConnect, int backlog = 128);
 		int Accept(UvStream *client);
-		int ReadStart(CbRead &&cbRead, CbAlloc &&cbAlloc);
+		int ReadStart(CbRead &&cbRead, CbAlloc &&cbAlloc = [](UvHandle *handle, size_t suggested_size, UvBuf *buf) { buf->Alloc(suggested_size); });
 		int Write(const UvBuf bufs[], uint32_t nbufs, CbWrite &&cbWrite);
 		int Shutdown(CbShutdown &&cbShutdown);
 
@@ -117,6 +130,8 @@ namespace uvpp
 
 	private:
 		CbConnect CallbackConnect_;
+		CbRead CallbackRead_;
+		CbAlloc CallbackAlloc_;
 	};
 
 	//////////////////////////////////////////////////////////////////////////

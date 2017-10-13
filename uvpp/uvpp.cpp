@@ -153,6 +153,24 @@ namespace uvpp
 		return uv_accept(GetRawStream(), client->GetRawStream());
 	}
 
+	int UvStream::ReadStart(CbRead &&cbRead, CbAlloc &&cbAlloc)
+	{
+		assert(cbRead && cbAlloc);
+		CallbackRead_ = cbRead;
+		CallbackAlloc_ = cbAlloc;
+		return uv_read_start(GetRawStream(), [](uv_handle_t *handle, size_t suggested_size, uv_buf_t *buf)
+		{
+			UvStream *pStream = static_cast<UvStream*>(handle->data);
+			assert(pStream);
+			pStream->CallbackAlloc_(pStream, suggested_size, reinterpret_cast<UvBuf*>(buf));
+		}, [](uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf)
+		{
+			UvStream *pStream = static_cast<UvStream*>(stream->data);
+			assert(pStream);
+			pStream->CallbackRead_(pStream, nread, reinterpret_cast<UvBuf*>(const_cast<uv_buf_t*>(buf)));
+		});
+	}
+
 	//////////////////////////////////////////////////////////////////////////
 	int UvTCP::Init(UvLoop &loop)
 	{

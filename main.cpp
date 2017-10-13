@@ -60,7 +60,11 @@ namespace TestUvpp
 			if (status == 0)
 			{
 				printf("* Accepted: \n");
-				//pClient->ReadStart();
+				pClient->ReadStart([](UvStream *stream, ssize_t nread, UvBuf *buf)
+				{
+					printf("* Read: %d, [%.*s]\n", nread, nread, buf->Data);
+					buf->Free();
+				});
 			}
 			else
 			{
