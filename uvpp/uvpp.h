@@ -12,6 +12,10 @@ namespace uvpp
 		virtual ~UvHandle() {}
 
 		virtual uv_handle_t* GetRawHandle() = 0;
+
+		const uv_handle_t* GetRawHandle() const;
+		bool IsActive() const;
+		bool IsClosing() const;
 	};
 
 	//////////////////////////////////////////////////////////////////////////
@@ -34,6 +38,8 @@ namespace uvpp
 
 		int Run(RunMode mode = Default);
 		void Stop();
+		bool Alive() const;
+		uint64_t Now() const;
 
 		void DelayDelete(UvHandle *pHandle);
 

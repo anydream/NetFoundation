@@ -19,8 +19,10 @@ namespace TestUvpp
 		int status = pTimer->Init(loop);
 		printf("* Timer.Init: %d\n", status);
 
-		SharedUniquePtr<int> pCounter(new int(0));
-		status = pTimer->Start([&loop, pTimer, pCounter]()
+		status = pTimer->Start(
+			[&loop,
+			pTimer,
+			pCounter = SharedUniquePtr<int>(new int(0))]()
 		{
 			printf("* Timeout ID: %d\n", *pCounter);
 			if (++*pCounter == 5)
@@ -51,12 +53,10 @@ namespace TestNF
 
 	static void TestTimer(EventEngine &ee)
 	{
-		Timer tmr(ee);
-
-		Timer *pRawTmr = new Timer(std::move(tmr));
-		SharedUniquePtr<Timer> pTmr(pRawTmr);
-		SharedUniquePtr<int> pCounter(new int(0));
-		pRawTmr->Start([pTmr, pCounter]() mutable
+		Timer *pTimer = new Timer(ee);
+		pTimer->Start(
+			[pTmr = SharedUniquePtr<Timer>(pTimer),
+			pCounter = SharedUniquePtr<int>(new int(0))]() mutable
 		{
 			printf("* Timeout ID: %d\n", *pCounter);
 			if (++*pCounter == 5)

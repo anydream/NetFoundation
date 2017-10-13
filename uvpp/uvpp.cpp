@@ -4,6 +4,22 @@
 namespace uvpp
 {
 	//////////////////////////////////////////////////////////////////////////
+	const uv_handle_t* UvHandle::GetRawHandle() const
+	{
+		return const_cast<UvHandle*>(this)->GetRawHandle();
+	}
+
+	bool UvHandle::IsActive() const
+	{
+		return uv_is_active(GetRawHandle()) != 0;
+	}
+
+	bool UvHandle::IsClosing() const
+	{
+		return uv_is_closing(GetRawHandle()) != 0;
+	}
+
+	//////////////////////////////////////////////////////////////////////////
 	UvLoop::UvLoop()
 	{
 		int status = uv_loop_init(&Loop_);
@@ -27,6 +43,16 @@ namespace uvpp
 	{
 		uv_stop(&Loop_);
 		IsRunning_ = false;
+	}
+
+	bool UvLoop::Alive() const
+	{
+		return uv_loop_alive(&Loop_) != 0;
+	}
+
+	uint64_t UvLoop::Now() const
+	{
+		return uv_now(&Loop_);
 	}
 
 	void UvLoop::DelayDelete(UvHandle *pHandle)
