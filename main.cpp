@@ -6,6 +6,8 @@
 #include "uvpp/uvpp.h"
 #include "NFTimer.h"
 #include "common/SharedUniquePtr.h"
+#include <string>
+#include <assert.h>
 
 #define KEY_STATE(_vk) (GetAsyncKeyState(_vk) & 0x8000)
 
@@ -38,29 +40,38 @@ namespace TestUvpp
 		printf("* Timer.Start: %d\n", status);
 	}
 
+	static std::string ToAddressName(sockaddr_storage *addr)
+	{
+		assert(addr->ss_family == AF_INET);
+		int port;
+		std::string result = UvMisc::ToNameIPv4(reinterpret_cast<sockaddr_in*>(addr), &port);
+		result.push_back(':');
+		return result + std::to_string(port);
+	}
+
 	static void TestTCPServer(UvLoop &loop)
 	{
 		// 创建服务端
 		UvTCP *pServer = new UvTCP;
 		int status = pServer->Init(loop);
-		printf("* UvTCP.Init: %d\n", status);
+		printf("* 初始化: %d\n", status);
 
 		// 绑定端口
 		sockaddr_in addr;
 		UvMisc::ToAddrIPv4("0.0.0.0", 12334, &addr);
 		status = pServer->Bind(reinterpret_cast<const sockaddr*>(&addr));
-		printf("* UvTCP.Bind: %d\n", status);
+		printf("* 绑定: %d\n", status);
 
 		// 开始监听
 		status = pServer->Listen([&loop,
 			numClients = SharedUniquePtr<int>(new int(0))](UvStream *server, int status)
 		{
-			if (status < 0)
+			if (status != 0)
 			{
-				printf("* IncomingConnect Error: %d\n", status);
+				printf("* 侦听出错: %d\n", status);
 				return;
 			}
-			printf("* IncomingConnect: %d\n", status);
+
 			// 创建会话
 			UvTCP *pClient = new UvTCP;
 			pClient->Init(loop);
@@ -68,21 +79,27 @@ namespace TestUvpp
 			if (status == 0)
 			{
 				++*numClients;
-				printf("* Accepted: Total: %d\n", *numClients);
+
+				auto addrs = pClient->GetPeerName();
+				std::string peerName = ToAddressName(&addrs);
+				printf("* 接受连接: [%s], Total: %d\n",
+					peerName.c_str(),
+					*numClients);
+
 				// 开始接收数据
 				UvBuf *pRecvBuf = new UvBuf;
-				pClient->ReadStart([&loop, &numClients,
+				pClient->ReadStart([&loop, &numClients, peerName,
 					pRecvBuf](UvStream *stream, ssize_t nread, UvBuf *buf)
 				{
 					if (nread < 0)
 					{
 						--*numClients;
-						printf("* Disconnected: %Id, Total: %d\n", nread, *numClients);
+						printf("* 断开连接: [%s], %Id, Total: %d\n", peerName.c_str(), nread, *numClients);
 						delete pRecvBuf;
 						loop.DelayDelete(stream);
 						return;
 					}
-					printf("* Read: %Id, [%.*s]\n", nread, (int)nread, buf->Data);
+					printf("* 读取: [%s], %Id [%.*s]\n", peerName.c_str(), nread, static_cast<int>(nread), buf->Data);
 				}, [pRecvBuf](UvHandle *handle, size_t suggested_size, UvBuf *buf)
 				{
 					pRecvBuf->Alloc(suggested_size);
@@ -91,11 +108,12 @@ namespace TestUvpp
 			}
 			else
 			{
-				printf("* Accept Error: %d\n", status);
+				auto addrs = pClient->GetPeerName();
+				printf("* 接受连接失败: [%s], %d\n", ToAddressName(&addrs).c_str(), status);
 				loop.DelayDelete(pClient);
 			}
 		});
-		printf("* UvTCP.Listen: %d\n", status);
+		printf("* 开始侦听: %d\n", status);
 
 		UvTimer *pStopTmr = new UvTimer;
 		pStopTmr->Init(loop);
@@ -103,7 +121,7 @@ namespace TestUvpp
 		{
 			if (KEY_STATE(VK_ESCAPE))
 			{
-				printf("* Exit\n");
+				printf("* 退出\n");
 				loop.DelayDelete(pServer);
 				loop.DelayDelete(pStopTmr);
 			}

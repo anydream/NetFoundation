@@ -184,6 +184,25 @@ namespace uvpp
 		return uv_tcp_bind(&TCP_, addr, flags);
 	}
 
+	int UvTCP::GetSockName(sockaddr *name, int *namelen) const
+	{
+		return uv_tcp_getsockname(&TCP_, name, namelen);
+	}
+
+	int UvTCP::GetPeerName(sockaddr *name, int *namelen) const
+	{
+		return uv_tcp_getpeername(&TCP_, name, namelen);
+	}
+
+	sockaddr_storage UvTCP::GetPeerName() const
+	{
+		sockaddr_storage addrs;
+		int len = sizeof(addrs);
+		int status = GetPeerName(reinterpret_cast<sockaddr*>(&addrs), &len);
+		assert(status == 0);
+		return addrs;
+	}
+
 	uv_stream_t* UvTCP::GetRawStream()
 	{
 		return reinterpret_cast<uv_stream_t*>(&TCP_);
@@ -198,5 +217,38 @@ namespace uvpp
 	int UvMisc::ToAddrIPv4(const char *ip, int port, sockaddr_in *addr)
 	{
 		return uv_ip4_addr(ip, port, addr);
+	}
+
+	int UvMisc::ToAddrIPv6(const char *ip, int port, sockaddr_in6 *addr)
+	{
+		return uv_ip6_addr(ip, port, addr);
+	}
+
+	std::string UvMisc::ToNameIPv4(const sockaddr_in *addr, int *port)
+	{
+		const size_t IpSize = 16;
+		char ip[IpSize];
+		int status = uv_ip4_name(addr, ip, IpSize);
+		if (status == 0)
+		{
+			if (port)
+				*port = ntohs(addr->sin_port);
+			return ip;
+		}
+		return std::string();
+	}
+
+	std::string UvMisc::ToNameIPv6(const sockaddr_in6 *addr, int *port)
+	{
+		const size_t IpSize = 46;
+		char ip[IpSize];
+		int status = uv_ip6_name(addr, ip, IpSize);
+		if (status == 0)
+		{
+			if (port)
+				*port = ntohs(addr->sin6_port);
+			return ip;
+		}
+		return std::string();
 	}
 }

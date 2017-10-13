@@ -147,6 +147,9 @@ namespace uvpp
 	public:
 		int Init(UvLoop &loop);
 		int Bind(const sockaddr *addr, uint32_t flags = 0);
+		int GetSockName(sockaddr *name, int *namelen) const;
+		int GetPeerName(sockaddr *name, int *namelen) const;
+		sockaddr_storage GetPeerName() const;
 
 		uv_stream_t* GetRawStream() override;
 		uv_handle_t* GetRawHandle() override;
@@ -163,5 +166,8 @@ namespace uvpp
 	{
 	public:
 		static int ToAddrIPv4(const char *ip, int port, sockaddr_in *addr);
+		static int ToAddrIPv6(const char *ip, int port, sockaddr_in6 *addr);
+		static std::string ToNameIPv4(const sockaddr_in *addr, int *port = nullptr);
+		static std::string ToNameIPv6(const sockaddr_in6 *addr, int *port = nullptr);
 	};
 }
