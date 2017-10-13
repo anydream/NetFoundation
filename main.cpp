@@ -7,6 +7,8 @@
 #include "NFTimer.h"
 #include "common/SharedUniquePtr.h"
 
+#define KEY_STATE(_vk) (GetAsyncKeyState(_vk) & 0x8000)
+
 //////////////////////////////////////////////////////////////////////////
 namespace TestUvpp
 {
@@ -50,7 +52,7 @@ namespace TestUvpp
 		printf("* UvTCP.Bind: %d\n", status);
 
 		// 开始监听
-		status = pServer->Listen([&loop, pServer,
+		status = pServer->Listen([&loop,
 			numClients = SharedUniquePtr<int>(new int(0))](UvStream *server, int status)
 		{
 			if (status < 0)
@@ -69,7 +71,7 @@ namespace TestUvpp
 				printf("* Accepted: Total: %d\n", *numClients);
 				// 开始接收数据
 				UvBuf *pRecvBuf = new UvBuf;
-				pClient->ReadStart([&loop, &numClients, pServer,
+				pClient->ReadStart([&loop, &numClients,
 					pRecvBuf](UvStream *stream, ssize_t nread, UvBuf *buf)
 				{
 					if (nread < 0)
@@ -78,11 +80,9 @@ namespace TestUvpp
 						printf("* Disconnected: %Id, Total: %d\n", nread, *numClients);
 						delete pRecvBuf;
 						loop.DelayDelete(stream);
-						if (*numClients == 0)
-							loop.DelayDelete(pServer);
 						return;
 					}
-					printf("* Read: %Id, [%.*s]\n", nread, nread, buf->Data);
+					printf("* Read: %Id, [%.*s]\n", nread, (int)nread, buf->Data);
 				}, [pRecvBuf](UvHandle *handle, size_t suggested_size, UvBuf *buf)
 				{
 					pRecvBuf->Alloc(suggested_size);
@@ -96,6 +96,18 @@ namespace TestUvpp
 			}
 		});
 		printf("* UvTCP.Listen: %d\n", status);
+
+		UvTimer *pStopTmr = new UvTimer;
+		pStopTmr->Init(loop);
+		pStopTmr->Start(0, 100, [&loop, pServer, pStopTmr]()
+		{
+			if (KEY_STATE(VK_ESCAPE))
+			{
+				printf("* Exit\n");
+				loop.DelayDelete(pServer);
+				loop.DelayDelete(pStopTmr);
+			}
+		});
 	}
 
 	static void TestEntry()
