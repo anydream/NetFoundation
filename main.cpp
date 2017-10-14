@@ -11,6 +11,16 @@
 
 #define KEY_STATE(_vk) (GetAsyncKeyState(_vk) & 0x8000)
 
+int printf_flush(const char *fmt, ...)
+{
+	va_list args;
+	va_start(args, fmt);
+	int result = vfprintf(stdout, fmt, args);
+	va_end(args);
+	fflush(stdout);
+	return result;
+}
+
 //////////////////////////////////////////////////////////////////////////
 namespace TestUvpp
 {
@@ -21,7 +31,7 @@ namespace TestUvpp
 		UvTimer *pTimer = new UvTimer();
 
 		int status = pTimer->Init(loop);
-		printf("* Timer.Init: %d\n", status);
+		printf_flush("* Timer.Init: %d\n", status);
 
 		status = pTimer->Start(
 			500, 1000,
@@ -29,15 +39,15 @@ namespace TestUvpp
 			pTimer,
 			pCounter = SharedUniquePtr<int>(new int(0))]()
 		{
-			printf("* Timeout ID: %d\n", *pCounter);
+			printf_flush("* Timeout ID: %d\n", *pCounter);
 			if (++*pCounter == 5)
 			{
-				printf("* Timer.Finished\n");
+				printf_flush("* Timer.Finished\n");
 				loop.DelayDelete(pTimer);
 			}
 		});
 
-		printf("* Timer.Start: %d\n", status);
+		printf_flush("* Timer.Start: %d\n", status);
 	}
 
 	static std::string ToAddressName(sockaddr_storage *addr)
@@ -54,13 +64,13 @@ namespace TestUvpp
 		// 创建服务端
 		UvTCP *pServer = new UvTCP;
 		int status = pServer->Init(loop);
-		printf("* 初始化: %d\n", status);
+		printf_flush("* 初始化: %d\n", status);
 
 		// 绑定端口
 		sockaddr_in addr;
 		UvMisc::ToAddrIPv4("0.0.0.0", 80, &addr);
 		status = pServer->Bind(reinterpret_cast<const sockaddr*>(&addr));
-		printf("* 绑定: %d\n", status);
+		printf_flush("* 绑定: %d\n", status);
 
 		// 开始监听
 		status = pServer->Listen([&loop,
@@ -68,7 +78,7 @@ namespace TestUvpp
 		{
 			if (status != 0)
 			{
-				printf("* 侦听出错: %d\n", status);
+				printf_flush("* 侦听失败: %d, %s\n", status, UvMisc::ToError(status));
 				return;
 			}
 
@@ -82,23 +92,31 @@ namespace TestUvpp
 
 				auto addrs = pClient->GetPeerName();
 				std::string peerName = ToAddressName(&addrs);
-				printf("* 接受连接: [%s], Total: %d\n",
+				printf_flush("* 接受连接: [%s], Total: %d\n",
 					peerName.c_str(),
 					*numClients);
 
 				// 开始接收数据
 				UvBuf *pRecvBuf = new UvBuf;
-				pClient->ReadStart([&loop, &numClients, peerName,
+				pClient->ReadStart([&loop, &numClients, pClient, peerName,
 					recvBuf = SharedUniquePtr<UvBuf>(pRecvBuf)](UvStream *stream, ssize_t nread, UvBuf *buf)
 				{
 					if (nread < 0)
 					{
 						--*numClients;
-						printf("* 断开连接: [%s], %Id, Total: %d\n", peerName.c_str(), nread, *numClients);
+						printf_flush("* 断开连接: [%s], Total: %d. %Id, %s\n", peerName.c_str(), *numClients, nread, UvMisc::ToError(nread));
+						// 停止写入
+						pClient->Shutdown([](int) {});
 						loop.DelayDelete(stream);
 						return;
 					}
-					printf("* 读取: [%s], %Id [%.*s]\n", peerName.c_str(), nread, static_cast<int>(nread), buf->Data);
+					// echo
+					pClient->Write(buf, 1, [](int status)
+					{
+						if (status < 0)
+							printf_flush("* 写入失败: %d, %s\n", status, UvMisc::ToError(status));
+					});
+					printf_flush("* 读取: [%s], %Id [%.*s]\n", peerName.c_str(), nread, static_cast<int>(nread), buf->Data);
 				}, [pRecvBuf](UvHandle *handle, size_t suggested_size, UvBuf *buf)
 				{
 					pRecvBuf->Alloc(suggested_size);
@@ -108,16 +126,16 @@ namespace TestUvpp
 			else
 			{
 				auto addrs = pClient->GetPeerName();
-				printf("* 接受连接失败: [%s], %d\n", ToAddressName(&addrs).c_str(), status);
+				printf_flush("* 接受连接失败: [%s], %d, %s\n", ToAddressName(&addrs).c_str(), status, UvMisc::ToError(status));
 				loop.DelayDelete(pClient);
 			}
 		});
-		printf("* 开始侦听: %d\n", status);
+		printf_flush("* 开始侦听: %d\n", status);
 	}
 
 	static void TestEntry()
 	{
-		printf("===== TestUvpp =====\n");
+		printf_flush("===== TestUvpp =====\n");
 
 		UvLoop loop;
 
@@ -128,13 +146,13 @@ namespace TestUvpp
 		pStopTmr->Init(loop);
 		pStopTmr->Start(0, 100, [&loop]()
 		{
-			if (KEY_STATE(VK_F11))
+			if (KEY_STATE(VK_F10))
 			{
-				printf("* 退出\n");
+				printf_flush("* 退出\n");
 
 				loop.Walk([&loop](UvHandle *handle)
 				{
-					printf("* Free: %s\n", handle->GetTypeName());
+					printf_flush("* Free: %s\n", handle->GetTypeName());
 					loop.DelayDelete(handle);
 				});
 			}
@@ -155,10 +173,10 @@ namespace TestNF
 			[pTmr = SharedUniquePtr<Timer>(pTimer),
 			pCounter = SharedUniquePtr<int>(new int(0))]() mutable
 		{
-			printf("* Timeout ID: %d\n", *pCounter);
+			printf_flush("* Timeout ID: %d\n", *pCounter);
 			if (++*pCounter == 5)
 			{
-				printf("* Timer.Finished\n");
+				printf_flush("* Timer.Finished\n");
 				pTmr = nullptr;
 			}
 		});
@@ -166,7 +184,7 @@ namespace TestNF
 
 	static void TestEntry()
 	{
-		printf("===== TestNF =====\n");
+		printf_flush("===== TestNF =====\n");
 
 		EventEngine ee;
 

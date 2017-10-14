@@ -113,7 +113,8 @@ namespace uvpp
 		int Listen(CbConnect &&cbConnect, int backlog = 128);
 		int Accept(UvStream *client);
 		int ReadStart(CbRead &&cbRead, CbAlloc &&cbAlloc);
-		int Write(const UvBuf bufs[], uint32_t nbufs, CbWrite &&cbWrite);
+		int ReadStop();
+		int Write(const UvBuf *bufs, uint32_t nbufs, CbWrite &&cbWrite);
 		int Shutdown(CbShutdown &&cbShutdown);
 
 		virtual uv_stream_t* GetRawStream() = 0;
@@ -122,6 +123,8 @@ namespace uvpp
 		CbConnect CallbackConnect_;
 		CbRead CallbackRead_;
 		CbAlloc CallbackAlloc_;
+		CbWrite CallbackWrite_;
+		CbShutdown CallbackShutdown_;
 	};
 
 	//////////////////////////////////////////////////////////////////////////
@@ -149,6 +152,7 @@ namespace uvpp
 	class UvMisc
 	{
 	public:
+		static const char* ToError(int errCode);
 		static int ToAddrIPv4(const char *ip, int port, sockaddr_in *addr);
 		static int ToAddrIPv6(const char *ip, int port, sockaddr_in6 *addr);
 		static std::string ToNameIPv4(const sockaddr_in *addr, int *port = nullptr);

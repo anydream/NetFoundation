@@ -220,6 +220,44 @@ namespace uvpp
 		});
 	}
 
+	int UvStream::ReadStop()
+	{
+		return uv_read_stop(GetRawStream());
+	}
+
+	int UvStream::Write(const UvBuf *bufs, uint32_t nbufs, CbWrite &&cbWrite)
+	{
+		assert(cbWrite);
+		CallbackWrite_ = cbWrite;
+		return uv_write(
+			static_cast<uv_write_t*>(malloc(sizeof(uv_write_t))),
+			GetRawStream(),
+			reinterpret_cast<const uv_buf_t*>(bufs), nbufs,
+			[](uv_write_t *req, int status)
+		{
+			UvStream *pStream = static_cast<UvStream*>(req->handle->data);
+			assert(pStream);
+			pStream->CallbackWrite_(status);
+			free(req);
+		});
+	}
+
+	int UvStream::Shutdown(CbShutdown &&cbShutdown)
+	{
+		assert(cbShutdown);
+		CallbackShutdown_ = cbShutdown;
+		return uv_shutdown(
+			static_cast<uv_shutdown_t*>(malloc(sizeof(uv_shutdown_t))),
+			GetRawStream(),
+			[](uv_shutdown_t *req, int status)
+		{
+			UvStream *pStream = static_cast<UvStream*>(req->handle->data);
+			assert(pStream);
+			pStream->CallbackShutdown_(status);
+			free(req);
+		});
+	}
+
 	//////////////////////////////////////////////////////////////////////////
 	int UvTCP::Init(UvLoop &loop)
 	{
@@ -268,6 +306,11 @@ namespace uvpp
 	}
 
 	//////////////////////////////////////////////////////////////////////////
+	const char* UvMisc::ToError(int errCode)
+	{
+		return uv_strerror(errCode);
+	}
+
 	int UvMisc::ToAddrIPv4(const char *ip, int port, sockaddr_in *addr)
 	{
 		return uv_ip4_addr(ip, port, addr);
