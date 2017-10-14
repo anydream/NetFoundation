@@ -8,9 +8,10 @@ namespace uvpp
 	{
 	}
 
-	UvBuf::~UvBuf()
+	UvBuf::UvBuf(size_t len, char *data)
+		: Length(len)
+		, Data(data)
 	{
-		Free();
 	}
 
 	void UvBuf::Alloc(size_t len)
@@ -32,6 +33,12 @@ namespace uvpp
 		Length = 0;
 		free(Data);
 		Data = nullptr;
+	}
+
+	void UvBuf::Deleter(UvBuf *pBuf)
+	{
+		pBuf->Free();
+		delete pBuf;
 	}
 
 	//////////////////////////////////////////////////////////////////////////

@@ -3,7 +3,7 @@
 #include <memory>
 
 //////////////////////////////////////////////////////////////////////////
-template <class T>
+template <class T, class D = std::default_delete<T>>
 class SharedUniquePtr
 {
 public:
@@ -13,6 +13,11 @@ public:
 
 	explicit SharedUniquePtr(T *ptr) noexcept
 		: Ptr_(ptr)
+	{
+	}
+
+	explicit SharedUniquePtr(T *ptr, D &&deleter) noexcept
+		: Ptr_(ptr, std::move(deleter))
 	{
 	}
 
@@ -65,5 +70,5 @@ public:
 	}
 
 private:
-	std::unique_ptr<T> Ptr_;
+	std::unique_ptr<T, D> Ptr_;
 };

@@ -99,7 +99,8 @@ namespace TestUvpp
 				// 开始接收数据
 				UvBuf *pRecvBuf = new UvBuf;
 				pClient->ReadStart([&loop, &numClients, pClient, peerName,
-					recvBuf = SharedUniquePtr<UvBuf>(pRecvBuf)](UvStream *stream, ssize_t nread, UvBuf *buf)
+					recvBuf = SharedUniquePtr<UvBuf, std::function<void(UvBuf*)>>(pRecvBuf, UvBuf::Deleter)]
+					(UvStream *stream, ssize_t nread, UvBuf *buf)
 				{
 					if (nread < 0)
 					{
@@ -111,12 +112,19 @@ namespace TestUvpp
 						return;
 					}
 					// echo
-					pClient->Write(buf, 1, [](int status)
+					UvBuf bufRange(nread, buf->Data);
+					pClient->Write(&bufRange, 1, [&loop, &numClients, pClient, peerName](int status)
 					{
+						// eof
+						--*numClients;
 						if (status < 0)
-							printf_flush("* 写入失败: %d, %s\n", status, UvMisc::ToError(status));
+							printf_flush("* 写入失败: [%s], Total: %d. %d, %s\n", peerName.c_str(), *numClients, status, UvMisc::ToError(status));
+						else
+							printf_flush("* 写入成功: [%s], Total: %d\n", peerName.c_str(), *numClients);
+						pClient->ReadStop();
+						loop.DelayDelete(pClient);
 					});
-					printf_flush("* 读取: [%s], %Id [%.*s]\n", peerName.c_str(), nread, static_cast<int>(nread), buf->Data);
+					printf_flush("* 读取: [%s], %Id [%.*s]\n", peerName.c_str(), bufRange.Length, static_cast<int>(bufRange.Length), bufRange.Data);
 				}, [pRecvBuf](UvHandle *handle, size_t suggested_size, UvBuf *buf)
 				{
 					pRecvBuf->Alloc(suggested_size);

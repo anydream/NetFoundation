@@ -12,10 +12,12 @@ namespace uvpp
 		char *Data = nullptr;
 
 		UvBuf();
-		~UvBuf();
+		UvBuf(size_t len, char *data);
 
 		void Alloc(size_t len);
 		void Free();
+
+		static void Deleter(UvBuf *pBuf);
 	};
 	static_assert(sizeof(UvBuf) == sizeof(uv_buf_t), "sizeof uv_buf_t");
 
