@@ -4,6 +4,37 @@
 namespace uvpp
 {
 	//////////////////////////////////////////////////////////////////////////
+	UvBuf::UvBuf()
+	{
+	}
+
+	UvBuf::~UvBuf()
+	{
+		Free();
+	}
+
+	void UvBuf::Alloc(size_t len)
+	{
+		if (Data == nullptr)
+		{
+			Length = len;
+			Data = static_cast<char*>(malloc(len));
+		}
+		else if (Length < len)
+		{
+			Length = len;
+			Data = static_cast<char*>(realloc(Data, len));
+		}
+	}
+
+	void UvBuf::Free()
+	{
+		Length = 0;
+		free(Data);
+		Data = nullptr;
+	}
+
+	//////////////////////////////////////////////////////////////////////////
 	const uv_handle_t* UvHandle::GetRawHandle() const
 	{
 		return const_cast<UvHandle*>(this)->GetRawHandle();
@@ -55,6 +86,19 @@ namespace uvpp
 		return uv_now(&Loop_);
 	}
 
+	void UvLoop::Walk(CbWalk &&cbWalk)
+	{
+		assert(cbWalk);
+		CallbackWalk_ = cbWalk;
+		uv_walk(&Loop_, [](uv_handle_t *handle, void *arg)
+		{
+			UvHandle *pHandle = static_cast<UvHandle*>(handle->data);
+			assert(pHandle);
+			UvLoop *pSelf = static_cast<UvLoop*>(arg);
+			pSelf->CallbackWalk_(pHandle);
+		}, this);
+	}
+
 	void UvLoop::DelayDelete(UvHandle *pHandle)
 	{
 		assert(pHandle);
@@ -101,12 +145,12 @@ namespace uvpp
 	int UvTimer::Start(uint64_t timeout, uint64_t repeat, std::function<void()> &&cbTimer)
 	{
 		assert(cbTimer);
-		Callback_ = cbTimer;
+		CallbackTimer_ = cbTimer;
 		return uv_timer_start(&Timer_, [](uv_timer_t *handle)
 		{
 			UvTimer *pHandle = static_cast<UvTimer*>(handle->data);
 			assert(pHandle);
-			pHandle->Callback_();
+			pHandle->CallbackTimer_();
 		}, timeout, repeat);
 	}
 
@@ -133,6 +177,11 @@ namespace uvpp
 	uv_handle_t* UvTimer::GetRawHandle()
 	{
 		return reinterpret_cast<uv_handle_t*>(&Timer_);
+	}
+
+	const char* UvTimer::GetTypeName()
+	{
+		return "UvTimer";
 	}
 
 	//////////////////////////////////////////////////////////////////////////
@@ -211,6 +260,11 @@ namespace uvpp
 	uv_handle_t* UvTCP::GetRawHandle()
 	{
 		return reinterpret_cast<uv_handle_t*>(&TCP_);
+	}
+
+	const char* UvTCP::GetTypeName()
+	{
+		return "UvTCP";
 	}
 
 	//////////////////////////////////////////////////////////////////////////

@@ -58,7 +58,7 @@ namespace TestUvpp
 
 		// 绑定端口
 		sockaddr_in addr;
-		UvMisc::ToAddrIPv4("0.0.0.0", 12334, &addr);
+		UvMisc::ToAddrIPv4("0.0.0.0", 80, &addr);
 		status = pServer->Bind(reinterpret_cast<const sockaddr*>(&addr));
 		printf("* 绑定: %d\n", status);
 
@@ -89,13 +89,12 @@ namespace TestUvpp
 				// 开始接收数据
 				UvBuf *pRecvBuf = new UvBuf;
 				pClient->ReadStart([&loop, &numClients, peerName,
-					pRecvBuf](UvStream *stream, ssize_t nread, UvBuf *buf)
+					recvBuf = SharedUniquePtr<UvBuf>(pRecvBuf)](UvStream *stream, ssize_t nread, UvBuf *buf)
 				{
 					if (nread < 0)
 					{
 						--*numClients;
 						printf("* 断开连接: [%s], %Id, Total: %d\n", peerName.c_str(), nread, *numClients);
-						delete pRecvBuf;
 						loop.DelayDelete(stream);
 						return;
 					}
@@ -114,18 +113,6 @@ namespace TestUvpp
 			}
 		});
 		printf("* 开始侦听: %d\n", status);
-
-		UvTimer *pStopTmr = new UvTimer;
-		pStopTmr->Init(loop);
-		pStopTmr->Start(0, 100, [&loop, pServer, pStopTmr]()
-		{
-			if (KEY_STATE(VK_ESCAPE))
-			{
-				printf("* 退出\n");
-				loop.DelayDelete(pServer);
-				loop.DelayDelete(pStopTmr);
-			}
-		});
 	}
 
 	static void TestEntry()
@@ -137,6 +124,21 @@ namespace TestUvpp
 		TestTCPServer(loop);
 		//TestTimer(loop);
 
+		UvTimer *pStopTmr = new UvTimer;
+		pStopTmr->Init(loop);
+		pStopTmr->Start(0, 100, [&loop]()
+		{
+			if (KEY_STATE(VK_F11))
+			{
+				printf("* 退出\n");
+
+				loop.Walk([&loop](UvHandle *handle)
+				{
+					printf("* Free: %s\n", handle->GetTypeName());
+					loop.DelayDelete(handle);
+				});
+			}
+		});
 		loop.Run();
 	}
 }

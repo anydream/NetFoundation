@@ -11,35 +11,11 @@ namespace uvpp
 		size_t Length = 0;
 		char *Data = nullptr;
 
-		UvBuf()
-		{
-		}
+		UvBuf();
+		~UvBuf();
 
-		~UvBuf()
-		{
-			Free();
-		}
-
-		void Alloc(size_t len)
-		{
-			if (Data == nullptr)
-			{
-				Length = len;
-				Data = static_cast<char*>(malloc(len));
-			}
-			else if (Length < len)
-			{
-				Length = len;
-				Data = static_cast<char*>(realloc(Data, len));
-			}
-		}
-
-		void Free()
-		{
-			Length = 0;
-			free(Data);
-			Data = nullptr;
-		}
+		void Alloc(size_t len);
+		void Free();
 	};
 	static_assert(sizeof(UvBuf) == sizeof(uv_buf_t), "sizeof uv_buf_t");
 
@@ -49,6 +25,7 @@ namespace uvpp
 		friend class UvLoop;
 	public:
 		virtual uv_handle_t* GetRawHandle() = 0;
+		virtual const char* GetTypeName() = 0;
 
 		const uv_handle_t* GetRawHandle() const;
 		bool IsActive() const;
@@ -69,6 +46,8 @@ namespace uvpp
 			NoWait = UV_RUN_NOWAIT
 		};
 
+		using CbWalk = std::function<void(UvHandle *handle)>;
+
 	public:
 		UvLoop();
 		UvLoop(const UvLoop&) = delete;
@@ -81,6 +60,8 @@ namespace uvpp
 		bool Alive() const;
 		uint64_t Now() const;
 
+		void Walk(CbWalk &&cbWalk);
+
 		void DelayDelete(UvHandle *pHandle);
 
 		uv_loop_t* GetRawLoop();
@@ -88,6 +69,7 @@ namespace uvpp
 
 	private:
 		uv_loop_t Loop_ = {};
+		CbWalk CallbackWalk_;
 		bool IsRunning_ = false;
 	};
 
@@ -104,13 +86,14 @@ namespace uvpp
 		uint64_t GetRepeat() const;
 
 		uv_handle_t* GetRawHandle() override;
+		const char* GetTypeName() override;
 
 	private:
 		~UvTimer();
 
 	private:
 		uv_timer_t Timer_ = {};
-		std::function<void()> Callback_;
+		std::function<void()> CallbackTimer_;
 	};
 
 	//////////////////////////////////////////////////////////////////////////
@@ -153,6 +136,7 @@ namespace uvpp
 
 		uv_stream_t* GetRawStream() override;
 		uv_handle_t* GetRawHandle() override;
+		const char* GetTypeName() override;
 
 	private:
 		~UvTCP() {}
