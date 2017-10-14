@@ -15,10 +15,17 @@ int printf_flush(const char *fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);
-	int result = vfprintf(stdout, fmt, args);
+
+	int bufSize = _vscprintf(fmt, args) + 1;
+	char *str = static_cast<char*>(alloca(bufSize));
+	bufSize = vsnprintf(str, bufSize, fmt, args);
+
 	va_end(args);
+
+	fwrite(str, 1, bufSize, stdout);
 	fflush(stdout);
-	return result;
+
+	return bufSize;
 }
 
 //////////////////////////////////////////////////////////////////////////
