@@ -135,8 +135,14 @@
     <ClCompile Include="StringConvert.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="TestServer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="uvpp\ServerBase.cpp">
+      <Filter>uvpp</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -187,6 +193,9 @@
     </ClInclude>
     <ClInclude Include="StringConvert.h">
       <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="uvpp\ServerBase.h">
+      <Filter>uvpp</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include <memory>
 #include <unordered_map>
 #include "uvpp.h"
 
@@ -9,6 +10,14 @@ namespace uvpp
 	class ServerBase
 	{
 		friend class SessionBase;
+	public:
+		enum ErrorState
+		{
+			StateNewSession,
+			StateStartRead,
+			StateAccept
+		};
+
 	public:
 		explicit ServerBase(UvLoop &loop);
 		ServerBase(const ServerBase&) = delete;
@@ -21,13 +30,16 @@ namespace uvpp
 
 	private:
 		void NotifyNewSession(int status);
-		void NotifyError(int errCode);
+		void NotifyError(int errCode, ErrorState state);
 
-		void AddSession(void *id, std::unique_ptr<SessionBase> &&pSession);
-		void DelSession(void *id);
+		void AddSession(std::unique_ptr<SessionBase> &&pSession);
+		void DelSession(SessionBase *ptr);
 
 	protected:
-		virtual void OnError(int errCode, const char *strErr) {}
+		virtual SessionBase* NewSession(ServerBase &owner) = 0;
+		virtual void OnAddSession(SessionBase *pSession) {}
+		virtual void OnDelSession(SessionBase *pSession) {}
+		virtual void OnError(int errCode, ErrorState state) {}
 
 	protected:
 		UvLoop &Loop_;
@@ -47,6 +59,8 @@ namespace uvpp
 		int Start();
 		void Stop() const;
 
+		const std::string& GetPeerAddress() const;
+
 	private:
 		void NotifyRead(ssize_t nread, UvBuf *buf);
 		void NotifyAlloc(size_t suggested_size, UvBuf *buf);
@@ -60,5 +74,8 @@ namespace uvpp
 		ServerBase &Owner_;
 		UvTCP *SessionPtr_ = nullptr;
 		UvBuf ReadBuf_;
+
+	private:
+		mutable std::string PeerAddr_;
 	};
 }

@@ -1,8 +1,4 @@
-﻿#if defined(_DEBUG) && defined(_WIN32) && !defined(_WIN64)
-#include <vld.h>
-#endif
-
-#include <assert.h>
+﻿#include <assert.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <malloc.h>
@@ -101,8 +97,8 @@ static void ServerLoop(int port)
 	Log("* 绑定: %d\n", status);
 
 	// 开始监听
-	status = pServer->Listen([&loop,
-		numClients = SharedUniquePtr<int>(new int(0))](UvStream *server, int status)
+	status = pServer->Listen([&loop, pServer,
+		numClients = SharedUniquePtr<int>(new int(0))](int status)
 	{
 		if (status != 0)
 		{
@@ -113,7 +109,7 @@ static void ServerLoop(int port)
 		// 创建会话
 		UvTCP *pClient = new UvTCP;
 		pClient->Init(loop);
-		status = server->Accept(pClient);
+		status = pServer->Accept(pClient);
 		if (status == 0)
 		{
 			++*numClients;
@@ -128,7 +124,7 @@ static void ServerLoop(int port)
 			UvBuf *pRecvBuf = new UvBuf;
 			pClient->ReadStart([&loop, &numClients, pClient, peerName,
 				recvBuf = SharedUniquePtr<UvBuf, std::function<void(UvBuf*)>>(pRecvBuf, UvBuf::Deleter)]
-				(UvStream *stream, ssize_t nread, UvBuf *buf)
+				(ssize_t nread, UvBuf *buf)
 			{
 				if (nread < 0)
 				{
@@ -136,7 +132,7 @@ static void ServerLoop(int port)
 					Log("* 断开连接: [%s], Total: %d. %Id, %s\n", peerName.c_str(), *numClients, nread, UvMisc::ToError(static_cast<int>(nread)));
 					// 停止写入
 					pClient->Shutdown([](int) {});
-					loop.DelayDelete(stream);
+					loop.DelayDelete(pClient);
 					return;
 				}
 				// echo
@@ -156,7 +152,7 @@ static void ServerLoop(int port)
 				Log.LogBuffer(bufRange.Length, bufRange.Data);
 				const char strLogEnd[] = "]\n";
 				Log.LogBuffer(sizeof(strLogEnd) - 1, strLogEnd);
-			}, [pRecvBuf](UvHandle *handle, size_t suggested_size, UvBuf *buf)
+			}, [pRecvBuf](size_t suggested_size, UvBuf *buf)
 			{
 				pRecvBuf->Alloc(suggested_size);
 				*buf = *pRecvBuf;
@@ -204,7 +200,7 @@ static void ServerLoop(int port)
 }
 
 //////////////////////////////////////////////////////////////////////////
-int main(int argc, const char **argv)
+int TestServerMain(int argc, const char **argv)
 {
 	const char *strPort = "80";
 	const char *strLogFile = "netlog.txt";

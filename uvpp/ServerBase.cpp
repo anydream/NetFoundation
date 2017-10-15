@@ -1,4 +1,4 @@
-﻿#include <memory>
+﻿#include <string>
 #include "ServerBase.h"
 
 namespace uvpp
@@ -39,37 +39,42 @@ namespace uvpp
 	{
 		if (status != 0)
 		{
-			NotifyError(status);
+			NotifyError(status, StateNewSession);
 			return;
 		}
 
-		std::unique_ptr<SessionBase> pSession(new SessionBase(*this));
+		std::unique_ptr<SessionBase> pSession(NewSession(*this));
 		status = pSession->Accept();
 		if (status == 0)
 		{
 			status = pSession->Start();
 			if (status == 0)
 			{
-				AddSession(pSession.get(), std::move(pSession));
-				return;
+				AddSession(std::move(pSession));
 			}
+			else
+				NotifyError(status, StateStartRead);
 		}
-		NotifyError(status);
+		else
+			NotifyError(status, StateAccept);
 	}
 
-	void ServerBase::NotifyError(int errCode)
+	void ServerBase::NotifyError(int errCode, ErrorState state)
 	{
-		OnError(errCode, UvMisc::ToError(errCode));
+		OnError(errCode, state);
 	}
 
-	void ServerBase::AddSession(void *id, std::unique_ptr<SessionBase> &&pSession)
+	void ServerBase::AddSession(std::unique_ptr<SessionBase> &&pSession)
 	{
-		SessionMap_[id] = std::move(pSession);
+		SessionBase *ptr = pSession.get();
+		SessionMap_[ptr] = std::move(pSession);
+		OnAddSession(ptr);
 	}
 
-	void ServerBase::DelSession(void *id)
+	void ServerBase::DelSession(SessionBase *ptr)
 	{
-		SessionMap_.erase(id);
+		OnDelSession(ptr);
+		SessionMap_.erase(ptr);
 	}
 
 	//////////////////////////////////////////////////////////////////////////
@@ -95,6 +100,20 @@ namespace uvpp
 	void SessionBase::Stop() const
 	{
 		SessionPtr_->ReadStop();
+	}
+
+	const std::string& SessionBase::GetPeerAddress() const
+	{
+		if (PeerAddr_.empty())
+		{
+			auto addrs = SessionPtr_->GetPeerName();
+			int port;
+			std::string strAddr = UvMisc::ToNameIPv4(reinterpret_cast<const sockaddr_in*>(&addrs), &port);
+			strAddr.push_back('|');
+			strAddr += std::to_string(port);
+			PeerAddr_ = strAddr;
+		}
+		return PeerAddr_;
 	}
 
 	int SessionBase::Start()
