@@ -25,14 +25,8 @@
     <Filter Include="common">
       <UniqueIdentifier>{2cc88e67-5a79-4048-8aef-5eeb31ccbca9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="NetFoundation">
-      <UniqueIdentifier>{1f56be99-f60d-49c9-8f58-db8de8476312}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="depends\libuv\src\fs-poll.c">
       <Filter>libuv</Filter>
     </ClCompile>
@@ -132,11 +126,17 @@
     <ClCompile Include="uvpp\uvpp.cpp">
       <Filter>uvpp</Filter>
     </ClCompile>
-    <ClCompile Include="src\NFEventEngine.cpp">
-      <Filter>NetFoundation</Filter>
+    <ClCompile Include="DateTime.cpp">
+      <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="src\NFTimer.cpp">
-      <Filter>NetFoundation</Filter>
+    <ClCompile Include="Formatter.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="StringConvert.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -176,11 +176,17 @@
     <ClInclude Include="common\SharedUniquePtr.h">
       <Filter>common</Filter>
     </ClInclude>
-    <ClInclude Include="include\NFEventEngine.h">
-      <Filter>NetFoundation</Filter>
+    <ClInclude Include="DateTime.h">
+      <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="include\NFTimer.h">
-      <Filter>NetFoundation</Filter>
+    <ClInclude Include="Formatter.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="UtilsNamespace.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="StringConvert.h">
+      <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
