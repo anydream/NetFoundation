@@ -218,12 +218,12 @@ namespace uvpp
 		{
 			UvStream *pStream = static_cast<UvStream*>(handle->data);
 			assert(pStream);
-			pStream->CallbackAlloc_(pStream, suggested_size, reinterpret_cast<UvBuf*>(buf));
+			pStream->CallbackAlloc_(suggested_size, reinterpret_cast<UvBuf*>(buf));
 		}, [](uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf)
 		{
 			UvStream *pStream = static_cast<UvStream*>(stream->data);
 			assert(pStream);
-			pStream->CallbackRead_(pStream, nread, reinterpret_cast<UvBuf*>(const_cast<uv_buf_t*>(buf)));
+			pStream->CallbackRead_(nread, reinterpret_cast<UvBuf*>(const_cast<uv_buf_t*>(buf)));
 		});
 	}
 

@@ -103,8 +103,8 @@ namespace uvpp
 	{
 	public:
 		using CbConnect = std::function<void(UvStream *server, int status)>;
-		using CbAlloc = std::function<void(UvHandle *handle, size_t suggested_size, UvBuf *buf)>;
-		using CbRead = std::function<void(UvStream *stream, ssize_t nread, UvBuf *buf)>;
+		using CbAlloc = std::function<void(size_t suggested_size, UvBuf *buf)>;
+		using CbRead = std::function<void(ssize_t nread, UvBuf *buf)>;
 		using CbWrite = std::function<void(int status)>;
 		using CbShutdown = std::function<void(int status)>;
 
