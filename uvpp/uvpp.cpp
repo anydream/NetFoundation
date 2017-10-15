@@ -200,7 +200,7 @@ namespace uvpp
 		{
 			UvStream *pStream = static_cast<UvStream*>(server->data);
 			assert(pStream);
-			pStream->CallbackConnect_(pStream, status);
+			pStream->CallbackConnect_(status);
 		});
 	}
 

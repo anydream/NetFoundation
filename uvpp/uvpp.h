@@ -102,7 +102,7 @@ namespace uvpp
 	class UvStream : public UvHandle
 	{
 	public:
-		using CbConnect = std::function<void(UvStream *server, int status)>;
+		using CbConnect = std::function<void(int status)>;
 		using CbAlloc = std::function<void(size_t suggested_size, UvBuf *buf)>;
 		using CbRead = std::function<void(ssize_t nread, UvBuf *buf)>;
 		using CbWrite = std::function<void(int status)>;

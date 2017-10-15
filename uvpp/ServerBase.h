@@ -1,0 +1,64 @@
+﻿#pragma once
+
+#include <unordered_map>
+#include "uvpp.h"
+
+namespace uvpp
+{
+	//////////////////////////////////////////////////////////////////////////
+	class ServerBase
+	{
+		friend class SessionBase;
+	public:
+		explicit ServerBase(UvLoop &loop);
+		ServerBase(const ServerBase&) = delete;
+		virtual ~ServerBase();
+
+		int Bind(int port, const char *ip = "0.0.0.0") const;
+
+		int Start(int backlog = 128);
+		void Stop() const;
+
+	private:
+		void NotifyNewSession(int status);
+		void NotifyError(int errCode);
+
+		void AddSession(void *id, std::unique_ptr<SessionBase> &&pSession);
+		void DelSession(void *id);
+
+	protected:
+		virtual void OnError(int errCode, const char *strErr) {}
+
+	protected:
+		UvLoop &Loop_;
+		UvTCP *ServerPtr_ = nullptr;
+		std::unordered_map<void*, std::unique_ptr<SessionBase>> SessionMap_;
+	};
+
+	//////////////////////////////////////////////////////////////////////////
+	class SessionBase
+	{
+	public:
+		explicit SessionBase(ServerBase &owner);
+		SessionBase(const SessionBase&) = delete;
+		virtual ~SessionBase();
+
+		int Accept() const;
+		int Start();
+		void Stop() const;
+
+	private:
+		void NotifyRead(ssize_t nread, UvBuf *buf);
+		void NotifyAlloc(size_t suggested_size, UvBuf *buf);
+		void NotifyDisconnected(int status);
+
+	protected:
+		virtual void OnRead(const char *data, size_t len) {}
+		virtual void OnDisconnected(int status) {}
+
+	protected:
+		ServerBase &Owner_;
+		UvTCP *SessionPtr_ = nullptr;
+		UvBuf ReadBuf_;
+	};
+}
