@@ -92,6 +92,18 @@ namespace uvpp
 		ReadBuf_.Free();
 	}
 
+	int SessionBase::Write(const char *data, size_t len)
+	{
+		UvBuf buf(len, const_cast<char*>(data));
+		return SessionPtr_->Write(&buf, 1, std::bind(&SessionBase::NotifyWrite, this, std::placeholders::_1));
+	}
+
+	void SessionBase::Disconnect(int status)
+	{
+		NotifyDisconnected(status);
+		Owner_.DelSession(this);
+	}
+
 	int SessionBase::Accept() const
 	{
 		return Owner_.ServerPtr_->Accept(SessionPtr_);
@@ -127,8 +139,7 @@ namespace uvpp
 	{
 		if (nread < 0)
 		{
-			NotifyDisconnected(static_cast<int>(nread));
-			Owner_.DelSession(this);
+			Disconnect(static_cast<int>(nread));
 			return;
 		}
 
@@ -139,6 +150,11 @@ namespace uvpp
 	{
 		ReadBuf_.Alloc(suggested_size);
 		*buf = ReadBuf_;
+	}
+
+	void SessionBase::NotifyWrite(int status)
+	{
+		OnWrite(status);
 	}
 
 	void SessionBase::NotifyDisconnected(int status)

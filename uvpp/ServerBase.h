@@ -50,24 +50,30 @@ namespace uvpp
 	//////////////////////////////////////////////////////////////////////////
 	class SessionBase
 	{
+		friend class ServerBase;
 	public:
 		explicit SessionBase(ServerBase &owner);
 		SessionBase(const SessionBase&) = delete;
 		virtual ~SessionBase();
 
-		int Accept() const;
-		int Start();
-		void Stop() const;
+		int Write(const char *data, size_t len);
+		void Disconnect(int status = 0);
 
 		const std::string& GetPeerAddress() const;
 
 	private:
+		int Accept() const;
+		int Start();
+		void Stop() const;
+
 		void NotifyRead(ssize_t nread, UvBuf *buf);
 		void NotifyAlloc(size_t suggested_size, UvBuf *buf);
+		void NotifyWrite(int status);
 		void NotifyDisconnected(int status);
 
 	protected:
 		virtual void OnRead(const char *data, size_t len) {}
+		virtual void OnWrite(int status) {}
 		virtual void OnDisconnected(int status) {}
 
 	protected:
